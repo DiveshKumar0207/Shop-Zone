@@ -4,6 +4,7 @@ import { query, matchedData, validationResult } from "express-validator";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import userModel from "../db/models/user.model";
+import { hashPassword, verifyPassword } from "../utils/hashPassword";
 
 const privateKey = fs.readFileSync("private.pem", "utf8");
 
@@ -31,12 +32,15 @@ const signUp = async (req: Request, res: Response, next: NextFunction) => {
       return res.status(400).json({ message: "Email already exist" });
     }
 
+    const { salt, hash } = hashPassword(password);
+
     const newUser = new userModel({
       firstname,
       lastname,
       email,
-      password,
-    }); //password will hashed by user model middleware. Check in user.model.ts
+      password: hash,
+      salt,
+    });
 
     const userCreated = await newUser.save();
 
@@ -72,7 +76,11 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
       return res.status(401).json({ message: "Incorrect email or password" });
     }
 
-    const isValidUser = await bcrypt.compare(password, isUserExisted.password);
+    const isValidUser = verifyPassword(
+      password,
+      isUserExisted.salt,
+      isUserExisted.password
+    );
     if (!isValidUser) {
       return res.status(401).json({ message: "Incorrect email or password" });
     }

@@ -6,6 +6,7 @@ import userModel from "../db/models/user.model";
 import resetTokenModel from "../db/models/resetToken.model";
 import { sendPasswordResetEmailFunc } from "../utils/sendEmail";
 import { ObjectId } from "mongoose";
+import { hashPassword } from "../utils/hashPassword";
 
 // Sends OTP to an email controller on route /api/auth/reset-password/send-otp/
 const sendResetPasswordMail = async (
@@ -61,13 +62,16 @@ const sendResetPasswordMail = async (
 
     await sendPasswordResetEmailFunc(email, link); //sends otp to mail
 
-    res.status(201).json({ message: "Reset link sent to your email" });
+    res
+      .status(201)
+      .json({ message: "Reset link sent to your email", link: link });
   } catch (err) {
     // Pass the error to the error handling middleware
     next(err);
   }
 };
 
+// Reset the password controller on route /api//auth/reset-password/:userid/:token
 const resetPassword = async (
   req: Request,
   res: Response,
@@ -90,9 +94,11 @@ const resetPassword = async (
       res.status(404).json({ message: "Invalid or expired token." });
     }
 
+    const { hash, salt } = hashPassword(password);
+
     const updatedUserPass = await userModel.findOneAndUpdate(
       { _id: userid },
-      { password },
+      { password: hash, salt },
       { new: true }
     );
 
@@ -108,4 +114,4 @@ const resetPassword = async (
   }
 };
 
-export { sendResetPasswordMail };
+export { sendResetPasswordMail, resetPassword };

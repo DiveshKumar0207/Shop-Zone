@@ -8,6 +8,7 @@ export interface IUser extends mongoose.Document {
   lastname: string;
   email: string;
   password: string;
+  salt: string;
   role: string;
   createdAt: Date;
   updatedAt: Date;
@@ -38,6 +39,11 @@ const userSchema = new mongoose.Schema<IUser>(
       required: true,
       trim: true,
     },
+    salt: {
+      type: String,
+      required: true,
+      trim: true,
+    },
     role: {
       type: String,
       enum: ["admin", "user"],
@@ -48,21 +54,6 @@ const userSchema = new mongoose.Schema<IUser>(
     timestamps: true,
   }
 );
-
-// Middleware for hashing our password
-userSchema.pre<IUser>("save", async function (next) {
-  const saltRound = 12;
-
-  if (this.isModified("password")) {
-    try {
-      this.password = await bcrypt.hash(this.password, saltRound);
-    } catch (error) {
-      next(new Error("hash failed"));
-    }
-  }
-
-  next();
-});
 
 // created user model
 const userModel = mongoose.model<IUser>("User", userSchema);

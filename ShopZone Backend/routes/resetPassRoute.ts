@@ -3,7 +3,10 @@ const router = express.Router();
 
 import { query, body } from "express-validator";
 
-import { sendResetPasswordMail } from "../controllers/resetPassword";
+import {
+  resetPassword,
+  sendResetPasswordMail,
+} from "../controllers/resetPassword";
 
 router.post(
   "/auth/reset-password/send-otp",
@@ -17,30 +20,34 @@ router.post(
   sendResetPasswordMail
 );
 
-router.post("/auth/reset-password/:userid/:token", [
-  body("password")
-    .trim()
-    .isLength({ min: 8 })
-    .withMessage("Password must be at least 8 characters long")
-    .matches(/[a-z]/)
-    .withMessage("Password must contain at least one lowercase letter")
-    .matches(/[A-Z]/)
-    .withMessage("Password must contain at least one uppercase letter")
-    .matches(/\d/)
-    .withMessage("Password must contain at least one digit")
-    .matches(/[!@#$%^&*()_+-=]/)
-    .withMessage("Password must contain at least one special character")
-    .escape(),
-  body("confirm-password")
-    .trim()
-    .custom((value, { req }) => {
-      if (value !== req.body.password) {
-        throw new Error("password dont match");
-      }
-      return true;
-    }),
-  query("userid").trim().escape(),
-  query("token").trim().escape(),
-]);
+router.post(
+  "/auth/reset-password/:userid/:token",
+  [
+    body("password")
+      .trim()
+      .isLength({ min: 8 })
+      .withMessage("Password must be at least 8 characters long")
+      .matches(/[a-z]/)
+      .withMessage("Password must contain at least one lowercase letter")
+      .matches(/[A-Z]/)
+      .withMessage("Password must contain at least one uppercase letter")
+      .matches(/\d/)
+      .withMessage("Password must contain at least one digit")
+      .matches(/[!@#$%^&*()_+-=]/)
+      .withMessage("Password must contain at least one special character")
+      .escape(),
+    body("confirm-password")
+      .trim()
+      .custom((value, { req }) => {
+        if (value !== req.body.password) {
+          throw new Error("password dont match");
+        }
+        return true;
+      }),
+    query("userid").trim().escape(),
+    query("token").trim().escape(),
+  ],
+  resetPassword
+);
 
 export default router;
