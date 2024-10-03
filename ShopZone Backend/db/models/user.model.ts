@@ -1,6 +1,4 @@
-import { NextFunction } from "express";
 import mongoose from "mongoose";
-import bcrypt from "bcryptjs";
 
 // Define an interface for the User document
 export interface IUser extends mongoose.Document {
@@ -10,6 +8,7 @@ export interface IUser extends mongoose.Document {
   password: string;
   salt: string;
   role: string;
+  profile: mongoose.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -49,6 +48,7 @@ const userSchema = new mongoose.Schema<IUser>(
       enum: ["admin", "user"],
       default: "user",
     },
+    profile: [mongoose.Schema.Types.ObjectId],
   },
   {
     timestamps: true,

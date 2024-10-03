@@ -1,7 +1,6 @@
 import fs from "fs";
 import { Response, Request, Errback, NextFunction } from "express";
-import { query, matchedData, validationResult } from "express-validator";
-import bcrypt from "bcryptjs";
+import { matchedData, validationResult } from "express-validator";
 import jwt from "jsonwebtoken";
 import userModel from "../db/models/user.model";
 import { hashPassword, verifyPassword } from "../utils/hashPassword";
